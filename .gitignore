@@ -1,0 +1,10 @@
+# Google service account credentials
+parent-messenger-487820-03c4e4e5a294.json
+service_key.json
+*-credentials*.json
+
+# Python
+venv/
+__pycache__/
+*.pyc
+.python-version
