@@ -2,7 +2,8 @@ import time
 import gspread  # to connect to google sheets
 from google.oauth2.service_account import Credentials
 from twilio.rest import Client
-
+import twilio_confirguration
+from twilio_confirguration import account_sid, auth_token, twilio_number
 
 def process_messages(parrent_name, name, Note):
     sliced_name_parent = parrent_name.split(" ")[0]
@@ -11,11 +12,11 @@ def process_messages(parrent_name, name, Note):
 
 
 def send_message(phone, message_to_be_sent):
-    twilio_client = Client(account_sid, auth_token)   
+    twilio_client = Client(twilio_confirguration.account_sid, twilio_confirguration.auth_token)   
     try:
      twilio_client.messages.create(
         to=phone,
-        from_=twilio_number,
+        from_=twilio_confirguration.twilio_number,
         body=message_to_be_sent,
     )
    

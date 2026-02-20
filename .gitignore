@@ -4,6 +4,7 @@ service_key.json
 *-credentials*.json
 twilio - confirguration
 twilio - configuration
+twilio_confirguration.py
 
 # Python
 venv/
