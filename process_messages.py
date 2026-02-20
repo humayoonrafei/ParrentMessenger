@@ -1,6 +1,7 @@
 import time
 import gspread  # to connect to google sheets
 from google.oauth2.service_account import Credentials
+from twilio.rest import Client
 
 
 def process_messages(parrent_name, name, Note):
@@ -10,10 +11,18 @@ def process_messages(parrent_name, name, Note):
 
 
 def send_message(phone, message_to_be_sent):
-    # send the message to the parent using twilio
-    print(f"Sending message to {phone}: {message_to_be_sent}")
-    return True
-
+    twilio_client = Client(account_sid, auth_token)   
+    try:
+     twilio_client.messages.create(
+        to=phone,
+        from_=twilio_number,
+        body=message_to_be_sent,
+    )
+   
+  
+    except Exception as e:
+        print(f"Error sending message to {phone}: {e}")
+        return False
 
 # Connect to Google Sheets
 scopes = [
@@ -26,6 +35,11 @@ client = gspread.authorize(creds)
 worksheet_name = "Student_Automation"
 sheet_name_parent = "Parent Contact Info"
 sheet = client.open(worksheet_name).worksheet(sheet_name_parent)
+
+
+# get the data from the sheet
+# if the header row has duplicates, use the raw data by column index
+# if the header row has no duplicates, use the get_all_records() method
 
 try:
     students = sheet.get_all_records()
@@ -41,17 +55,49 @@ except Exception:
                     "Notes": row[2], "Parent Name": row[3]
                 })
 
-for student in students:
-    phone = student.get("Parent Number") or student.get("Parent number") or (list(student.values())[1] if len(student) > 1 else "")
-    parrent_name = student.get("Parent Name") or student.get("Parent name") or (list(student.values())[3] if len(student) > 3 else "")
-    name = student.get("Student Name") or student.get("Student name") or (list(student.values())[0] if student else "")
-    Note = student.get("Custom Notes") or student.get("Notes") or (list(student.values())[2] if len(student) > 2 else "")
+def run_parent_alerts():
+    # 1. Get the data
+    try:
+        students = sheet.get_all_records()
+    except Exception:
+        # (Your fallback logic here...)
+        pass
 
-    if not name or not parrent_name:
-        continue  # Skip header/metadata rows
+    # 2. Process the loop
+    for i, student in enumerate(students, start=2):
+        # We use i to keep track of the ROW number for updating later
+        
+        status = student.get("Message_Status") or student.get("Status")
+        
+        if status != "Pending":
+            print(f"Skipping {student.get('sliced_name_student')} - Already {status}")
+            continue
 
-    message_to_be_sent = process_messages(parrent_name, name, Note)
-    print(message_to_be_sent)
-    send_message(phone, message_to_be_sent)
-    time.sleep(1)
+        # Extract data
+        phone = student.get("Parent Number")
+        parent_name = student.get("Parent Name")
+        student_name = student.get("Student Name")
+        note = student.get("Notes")
 
+        if not student_name or not parent_name:
+            continue
+
+        # Generate and Send
+        message = process_messages(parent_name, student_name, note)
+        print(f"Sending to {student_name}'s parent...")
+        
+        success = send_message(phone, message)
+
+        # 3. Update the Status
+        if success:
+            # Change '5' to the actual column number of your Status column
+            sheet.update_cell(i, 5, "Sent")
+            print("Status updated to Sent.")
+
+        time.sleep(1)
+
+# This is the "Entry Point" of your program
+if __name__ == "__main__":
+    print("🚀 Starting Automation...")
+    run_parent_alerts()
+    print("✅ All done!")
