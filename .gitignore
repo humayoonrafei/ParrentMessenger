@@ -1,3 +1,6 @@
+# Environment and secrets
+.env
+
 # Google service account credentials
 parent-messenger-487820-03c4e4e5a294.json
 service_key.json
@@ -5,6 +8,8 @@ service_key.json
 twilio - confirguration
 twilio - configuration
 twilio_confirguration.py
+aws_credentials.json
+aws_configuration.py
 
 # Python
 venv/

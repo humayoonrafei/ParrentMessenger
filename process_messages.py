@@ -4,6 +4,9 @@ from google.oauth2.service_account import Credentials
 from twilio.rest import Client
 import twilio_confirguration
 from twilio_confirguration import account_sid, auth_token, twilio_number
+from AWS_configuration import sns
+from AWS_configuration import aws_access_key_id, aws_secret_access_key, aws_region
+
 
 def process_messages(parrent_name, name, Note):
     sliced_name_parent = parrent_name.split(" ")[0]
@@ -11,16 +14,25 @@ def process_messages(parrent_name, name, Note):
     return f" Dear {sliced_name_parent},  {sliced_name_student}'s  Algebra success Teacher has a message for you. {Note}"
 
 
-def send_message(phone, message_to_be_sent):
-    twilio_client = Client(twilio_confirguration.account_sid, twilio_confirguration.auth_token)   
-    try:
-     twilio_client.messages.create(
-        to=phone,
-        from_=twilio_confirguration.twilio_number,
-        body=message_to_be_sent,
-    )
-   
+# def send_message(phone, message_to_be_sent):
+#     twilio_client = Client(twilio_confirguration.account_sid, twilio_confirguration.auth_token)   
+#     try:
+#         twilio_client.messages.create(
+#             to=phone,
+#             from_=twilio_confirguration.twilio_number,
+#             body=message_to_be_sent,
+#         )
+   # send the message to the topic
   
+
+def send_message(phone, message_to_be_sent):
+    try:
+        response = sns.publish(
+            TopicArn='arn:aws:sns:us-east-1:123456789012:MyTopic',
+            Message=message_to_be_sent,
+            Subject='Test Message to Parent from Python Script'
+        )
+        return bool(response.get('MessageId'))
     except Exception as e:
         print(f"Error sending message to {phone}: {e}")
         return False
