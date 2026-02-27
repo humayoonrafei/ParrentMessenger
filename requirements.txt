@@ -1,3 +1,15 @@
 gspread
 google-auth
 python-dotenv
+boto3   
+
+# make it as todo item
+- [ ] fix the aws sns topic
+- [ ] fix the aws sns topic subscription
+
+Note: feb 25 2026  
+The aws sns topic is created in the aws console and the topic arn is used to send the message to the topic.
+however is still not working as expected. so we need to fix it. 
+
+
+

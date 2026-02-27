@@ -4,7 +4,7 @@ from google.oauth2.service_account import Credentials
 from twilio.rest import Client
 import twilio_confirguration
 from twilio_confirguration import account_sid, auth_token, twilio_number
-from AWS_configuration import sns
+from AWS_configuration import sns, sns_topic_arn
 from AWS_configuration import aws_access_key_id, aws_secret_access_key, aws_region
 
 
@@ -28,7 +28,7 @@ def process_messages(parrent_name, name, Note):
 def send_message(phone, message_to_be_sent):
     try:
         response = sns.publish(
-            TopicArn='arn:aws:sns:us-east-1:123456789012:MyTopic',
+            TopicArn=sns_topic_arn,
             Message=message_to_be_sent,
             Subject='Test Message to Parent from Python Script'
         )
@@ -72,18 +72,15 @@ def run_parent_alerts():
     # 1. Get the data
     try:
         students = sheet.get_all_records()
-    except Exception:
-        # (Your fallback logic here...)
-        pass
+    except Exception as ex:
+        students = []
 
     # 2. Process the loop
     for i, student in enumerate(students, start=2):
-        # We use i to keep track of the ROW number for updating later
-        
         status = student.get("Message_Status") or student.get("Status")
-        
+
         if status != "Pending":
-            print(f"Skipping {student.get('sliced_name_student')} - Already {status}")
+            print(f"Skipping {student.get('Student Name')} - Already {status}")
             continue
 
         # Extract data
