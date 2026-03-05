@@ -101,7 +101,7 @@ def run_parent_alerts():
         # 3. Update the Status
         if success:
             # Change '5' to the actual column number of your Status column
-            sheet.update_cell(i, 5, "Sent")
+            sheet.update_cell(i, 6, "Sent")
             print("Status updated to Sent.")
 
         time.sleep(1)
